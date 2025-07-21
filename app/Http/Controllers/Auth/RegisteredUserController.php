@@ -45,7 +45,9 @@ class RegisteredUserController extends Controller
 
         // Start the trial period (14 days) only if not in testing environment
         if (!app()->environment('testing')) {
-            $company->newSubscription('default', null)->trialDays(14)->create();
+            // Set trial end date without creating a Stripe subscription yet
+            $company->trial_ends_at = now()->addDays(14);
+            $company->save();
         }
 
         // Create the user and assign them as admin
