@@ -1,11 +1,45 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import DangerButton from '@/Components/DangerButton.vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     gage: Object,
 });
+
+// Checkout form
+const showCheckoutForm = ref(false);
+const checkoutForm = useForm({
+    notes: '',
+});
+
+const submitCheckout = () => {
+    checkoutForm.post(route('gages.checkout', props.gage.id), {
+        onSuccess: () => {
+            showCheckoutForm.value = false;
+            checkoutForm.reset();
+        }
+    });
+};
+
+// Checkin form
+const showCheckinForm = ref(false);
+const checkinForm = useForm({
+    notes: '',
+});
+
+const submitCheckin = () => {
+    checkinForm.post(route('gages.checkin', props.gage.id), {
+        onSuccess: () => {
+            showCheckinForm.value = false;
+            checkinForm.reset();
+        }
+    });
+};
 </script>
 
 <template>
@@ -33,6 +67,20 @@ defineProps({
                                 <Link :href="route('calibration-records.create', { gage_id: gage.id })">
                                     <PrimaryButton>Add Calibration</PrimaryButton>
                                 </Link>
+                                <button 
+                                    v-if="!gage.is_checked_out"
+                                    @click="showCheckoutForm = true"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Check Out
+                                </button>
+                                <button 
+                                    v-if="gage.is_checked_out"
+                                    @click="showCheckinForm = true"
+                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Check In
+                                </button>
                             </div>
                         </div>
 
@@ -56,6 +104,96 @@ defineProps({
                                 </div>
                             </div>
 
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                <h2 class="text-lg font-semibold mb-4">Current Status</h2>
+                                <div class="space-y-3">
+                                    <!-- Checkout Status -->
+                                    <div>
+                                        <span class="font-medium">Checkout Status:</span>
+                                        <span v-if="gage.is_checked_out" class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Checked Out
+                                        </span>
+                                        <span v-else class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            Available
+                                        </span>
+                                    </div>
+                                    <div v-if="gage.current_checkout">
+                                        <span class="font-medium">Checked out by:</span>
+                                        <span class="ml-2">{{ gage.current_checkout.user.name }}</span>
+                                    </div>
+                                    <div v-if="gage.current_checkout">
+                                        <span class="font-medium">Checked out at:</span>
+                                        <span class="ml-2">{{ new Date(gage.current_checkout.checked_out_at).toLocaleString() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Forms -->
+                        <div v-if="showCheckoutForm" class="mb-8 bg-blue-50 dark:bg-blue-900 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4">Check Out Gage</h3>
+                            <form @submit.prevent="submitCheckout" class="max-w-md">
+                                <div class="mb-4">
+                                    <InputLabel for="checkout_notes" value="Notes (optional)" />
+                                    <textarea
+                                        id="checkout_notes"
+                                        v-model="checkoutForm.notes"
+                                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                        rows="3"
+                                        placeholder="Purpose of checkout, expected return date, etc."
+                                    ></textarea>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <PrimaryButton 
+                                        :class="{ 'opacity-25': checkoutForm.processing }"
+                                        :disabled="checkoutForm.processing"
+                                    >
+                                        Confirm Check Out
+                                    </PrimaryButton>
+                                    <button 
+                                        type="button"
+                                        @click="showCheckoutForm = false"
+                                        class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div v-if="showCheckinForm" class="mb-8 bg-green-50 dark:bg-green-900 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4">Check In Gage</h3>
+                            <form @submit.prevent="submitCheckin" class="max-w-md">
+                                <div class="mb-4">
+                                    <InputLabel for="checkin_notes" value="Return Notes (optional)" />
+                                    <textarea
+                                        id="checkin_notes"
+                                        v-model="checkinForm.notes"
+                                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                        rows="3"
+                                        placeholder="Condition of gage, issues encountered, etc."
+                                    ></textarea>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <PrimaryButton 
+                                        :class="{ 'opacity-25': checkinForm.processing }"
+                                        :disabled="checkinForm.processing"
+                                    >
+                                        Confirm Check In
+                                    </PrimaryButton>
+                                    <button 
+                                        type="button"
+                                        @click="showCheckinForm = false"
+                                        class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Calibration Status -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                                 <h2 class="text-lg font-semibold mb-4">Calibration Status</h2>
                                 <div class="space-y-3">
@@ -95,6 +233,18 @@ defineProps({
                                         <span class="font-medium">Total Calibrations:</span>
                                         <span class="ml-2">{{ gage.calibration_records.length }}</span>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                <h2 class="text-lg font-semibold mb-4">Actions</h2>
+                                <div class="space-y-3">
+                                    <Link :href="route('calibration-records.create', { gage_id: gage.id })">
+                                        <PrimaryButton class="w-full">Add Calibration Record</PrimaryButton>
+                                    </Link>
+                                    <Link :href="route('gages.checkout-history', gage.id)">
+                                        <PrimaryButton class="w-full">View Checkout History</PrimaryButton>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

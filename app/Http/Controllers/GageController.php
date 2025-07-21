@@ -80,14 +80,22 @@ class GageController extends Controller
     {
         $this->authorize('view', $gage);
         
-        $gage->load(['department', 'calibrationRecords' => function ($query) {
-            $query->with('user')->latest();
-        }]);
+        $gage->load([
+            'department', 
+            'calibrationRecords' => function ($query) {
+                $query->with('user')->latest();
+            },
+            'checkouts' => function ($query) {
+                $query->with('user')->latest()->limit(5);
+            }
+        ]);
 
         // Add status information
         $gage->status = $gage->getCalibrationStatus();
         $gage->status_color = $gage->getCalibrationStatusColor();
         $gage->days_until_due = $gage->getDaysUntilDue();
+        $gage->current_checkout = $gage->currentCheckout()?->load('user');
+        $gage->is_checked_out = $gage->isCheckedOut();
 
         return Inertia::render('Gages/Show', [
             'gage' => $gage,

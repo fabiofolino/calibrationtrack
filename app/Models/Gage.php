@@ -36,6 +36,27 @@ class Gage extends Model
         return $this->hasMany(CalibrationRecord::class);
     }
 
+    public function checkouts(): HasMany
+    {
+        return $this->hasMany(GageCheckout::class);
+    }
+
+    /**
+     * Get the current active checkout for this gage
+     */
+    public function currentCheckout(): ?GageCheckout
+    {
+        return $this->checkouts()->whereNull('checked_in_at')->first();
+    }
+
+    /**
+     * Check if the gage is currently checked out
+     */
+    public function isCheckedOut(): bool
+    {
+        return $this->currentCheckout() !== null;
+    }
+
     /**
      * Calculate and update the next due date based on frequency and last calibration
      */

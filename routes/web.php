@@ -33,6 +33,11 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
         Route::resource('gages', \App\Http\Controllers\GageController::class);
         Route::resource('calibration-records', \App\Http\Controllers\CalibrationRecordController::class);
+        
+        // Gage checkout routes
+        Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');
+        Route::post('gages/{gage}/checkin', [\App\Http\Controllers\GageCheckoutController::class, 'checkin'])->name('gages.checkin');
+        Route::get('gages/{gage}/checkout-history', [\App\Http\Controllers\GageCheckoutController::class, 'history'])->name('gages.checkout-history');
     });
 });
 
