@@ -51,6 +51,12 @@ const deleteGage = (id) => {
                                             Frequency (Days)
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Due Date
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Last Calibration
                                         </th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -83,6 +89,35 @@ const deleteGage = (id) => {
                                             <div class="text-sm text-gray-900 dark:text-gray-100">
                                                 {{ gage.frequency_days }}
                                             </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">
+                                                <span v-if="gage.next_due_date">
+                                                    {{ new Date(gage.next_due_date).toLocaleDateString() }}
+                                                </span>
+                                                <span v-else class="text-gray-500 italic">
+                                                    Not set
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span 
+                                                v-if="gage.status" 
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                                :class="{
+                                                    'bg-red-100 text-red-800': gage.status === 'overdue',
+                                                    'bg-yellow-100 text-yellow-800': gage.status === 'due_soon',
+                                                    'bg-green-100 text-green-800': gage.status === 'on_schedule',
+                                                    'bg-gray-100 text-gray-800': gage.status === 'unknown'
+                                                }"
+                                            >
+                                                {{ gage.status === 'overdue' ? 'Overdue' : 
+                                                   gage.status === 'due_soon' ? 'Due Soon' : 
+                                                   gage.status === 'on_schedule' ? 'On Schedule' : 'Unknown' }}
+                                                <span v-if="gage.days_until_due !== null" class="ml-1">
+                                                    ({{ gage.days_until_due < 0 ? Math.abs(gage.days_until_due) + ' days ago' : gage.days_until_due + ' days' }})
+                                                </span>
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900 dark:text-gray-100">

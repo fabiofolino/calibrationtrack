@@ -21,6 +21,13 @@ class GageController extends Controller
         $gages = auth()->user()->company->gages()->with(['department', 'calibrationRecords' => function ($query) {
             $query->latest()->limit(1);
         }])->get();
+
+        // Add status information to each gage
+        $gages->each(function ($gage) {
+            $gage->status = $gage->getCalibrationStatus();
+            $gage->status_color = $gage->getCalibrationStatusColor();
+            $gage->days_until_due = $gage->getDaysUntilDue();
+        });
         
         return Inertia::render('Gages/Index', [
             'gages' => $gages,
@@ -76,6 +83,11 @@ class GageController extends Controller
         $gage->load(['department', 'calibrationRecords' => function ($query) {
             $query->with('user')->latest();
         }]);
+
+        // Add status information
+        $gage->status = $gage->getCalibrationStatus();
+        $gage->status_color = $gage->getCalibrationStatusColor();
+        $gage->days_until_due = $gage->getDaysUntilDue();
 
         return Inertia::render('Gages/Show', [
             'gage' => $gage,

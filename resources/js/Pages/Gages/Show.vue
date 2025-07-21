@@ -68,6 +68,29 @@ defineProps({
                                             No calibrations recorded
                                         </span>
                                     </div>
+                                    <div v-if="gage.next_due_date">
+                                        <span class="font-medium">Next Due Date:</span>
+                                        <span class="ml-2">{{ new Date(gage.next_due_date).toLocaleDateString() }}</span>
+                                    </div>
+                                    <div v-if="gage.status">
+                                        <span class="font-medium">Status:</span>
+                                        <span 
+                                            class="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                            :class="{
+                                                'bg-red-100 text-red-800': gage.status === 'overdue',
+                                                'bg-yellow-100 text-yellow-800': gage.status === 'due_soon',
+                                                'bg-green-100 text-green-800': gage.status === 'on_schedule',
+                                                'bg-gray-100 text-gray-800': gage.status === 'unknown'
+                                            }"
+                                        >
+                                            {{ gage.status === 'overdue' ? 'Overdue' : 
+                                               gage.status === 'due_soon' ? 'Due Soon' : 
+                                               gage.status === 'on_schedule' ? 'On Schedule' : 'Unknown' }}
+                                            <span v-if="gage.days_until_due !== null" class="ml-1">
+                                                ({{ gage.days_until_due < 0 ? Math.abs(gage.days_until_due) + ' days ago' : gage.days_until_due + ' days' }})
+                                            </span>
+                                        </span>
+                                    </div>
                                     <div>
                                         <span class="font-medium">Total Calibrations:</span>
                                         <span class="ml-2">{{ gage.calibration_records.length }}</span>
