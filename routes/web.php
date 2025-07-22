@@ -38,6 +38,12 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');
         Route::post('gages/{gage}/checkin', [\App\Http\Controllers\GageCheckoutController::class, 'checkin'])->name('gages.checkin');
         Route::get('gages/{gage}/checkout-history', [\App\Http\Controllers\GageCheckoutController::class, 'history'])->name('gages.checkout-history');
+        
+        // Export routes
+        Route::get('export/gages/csv', [\App\Http\Controllers\ExportController::class, 'exportGagesCSV'])->name('export.gages.csv');
+        Route::get('export/gages/pdf', [\App\Http\Controllers\ExportController::class, 'exportGagesPDF'])->name('export.gages.pdf');
+        Route::get('export/calibration-records/csv', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsCSV'])->name('export.calibration-records.csv');
+        Route::get('export/calibration-records/pdf', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsPDF'])->name('export.calibration-records.pdf');
     });
 });
 

@@ -25,9 +25,26 @@ const deleteGage = (id) => {
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="flex justify-between items-center mb-6">
                             <h1 class="text-2xl font-bold">Gages</h1>
-                            <Link :href="route('gages.create')">
-                                <PrimaryButton>Add Gage</PrimaryButton>
-                            </Link>
+                            <div class="flex space-x-3">
+                                <!-- Export Buttons -->
+                                <div class="flex space-x-2">
+                                    <a 
+                                        :href="route('export.gages.csv')"
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    >
+                                        📊 Export CSV
+                                    </a>
+                                    <a 
+                                        :href="route('export.gages.pdf')"
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    >
+                                        📄 Export PDF
+                                    </a>
+                                </div>
+                                <Link :href="route('gages.create')">
+                                    <PrimaryButton>Add Gage</PrimaryButton>
+                                </Link>
+                            </div>
                         </div>
 
                         <div v-if="gages.length === 0" class="text-center py-8 text-gray-500">
