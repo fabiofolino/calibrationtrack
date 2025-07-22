@@ -27,7 +27,7 @@ class Company extends Model
         return $this->hasMany(Department::class);
     }
 
-    public function gages(): HasMany
+    public function gages(): HasManyThrough
     {
         return $this->hasManyThrough(Gage::class, Department::class);
     }

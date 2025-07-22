@@ -2,16 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Gage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class GageController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $this->authorize('viewAny', Gage::class);
+
+        $gages = auth()->user()->company->gages()->with(['department', 'calibrationRecords' => function ($query) {
+            $query->latest()->limit(1);
+        }])->get();
+
+        // Add status information to each gage
+        $gages->each(function ($gage) {
+            $gage->status = $gage->getCalibrationStatus();
+            $gage->status_color = $gage->getCalibrationStatusColor();
+            $gage->days_until_due = $gage->getDaysUntilDue();
+        });
+        
+        return Inertia::render('Gages/Index', [
+            'gages' => $gages,
+        ]);
     }
 
     /**
@@ -19,7 +39,13 @@ class GageController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', Gage::class);
+
+        $departments = auth()->user()->company->departments()->get();
+
+        return Inertia::render('Gages/Create', [
+            'departments' => $departments,
+        ]);
     }
 
     /**
@@ -27,38 +53,105 @@ class GageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', Gage::class);
+
+        $request->validate([
+            'department_id' => 'required|exists:departments,id',
+            'name' => 'required|string|max:255',
+            'serial_number' => 'required|string|max:255|unique:gages',
+            'frequency_days' => 'required|integer|min:1',
+        ]);
+
+        // Verify department belongs to user's company
+        $department = auth()->user()->company->departments()->findOrFail($request->department_id);
+
+        Gage::create($request->only([
+            'department_id', 'name', 'serial_number', 'frequency_days'
+        ]));
+
+        return redirect()->route('gages.index')
+            ->with('success', 'Gage created successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Gage $gage)
     {
-        //
+        $this->authorize('view', $gage);
+        
+        $gage->load([
+            'department', 
+            'calibrationRecords' => function ($query) {
+                $query->with('user')->latest();
+            },
+            'checkouts' => function ($query) {
+                $query->with('user')->latest()->limit(5);
+            }
+        ]);
+
+        // Add status information
+        $gage->status = $gage->getCalibrationStatus();
+        $gage->status_color = $gage->getCalibrationStatusColor();
+        $gage->days_until_due = $gage->getDaysUntilDue();
+        $gage->current_checkout = $gage->currentCheckout()?->load('user');
+        $gage->is_checked_out = $gage->isCheckedOut();
+
+        return Inertia::render('Gages/Show', [
+            'gage' => $gage,
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Gage $gage)
     {
-        //
+        $this->authorize('update', $gage);
+
+        $departments = auth()->user()->company->departments()->get();
+
+        return Inertia::render('Gages/Edit', [
+            'gage' => $gage,
+            'departments' => $departments,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Gage $gage)
     {
-        //
+        $this->authorize('update', $gage);
+
+        $request->validate([
+            'department_id' => 'required|exists:departments,id',
+            'name' => 'required|string|max:255',
+            'serial_number' => 'required|string|max:255|unique:gages,serial_number,' . $gage->id,
+            'frequency_days' => 'required|integer|min:1',
+        ]);
+
+        // Verify department belongs to user's company
+        $department = auth()->user()->company->departments()->findOrFail($request->department_id);
+
+        $gage->update($request->only([
+            'department_id', 'name', 'serial_number', 'frequency_days'
+        ]));
+
+        return redirect()->route('gages.index')
+            ->with('success', 'Gage updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Gage $gage)
     {
-        //
+        $this->authorize('delete', $gage);
+
+        $gage->delete();
+
+        return redirect()->route('gages.index')
+            ->with('success', 'Gage deleted successfully.');
     }
 }

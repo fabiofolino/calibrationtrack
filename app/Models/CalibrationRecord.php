@@ -27,6 +27,21 @@ class CalibrationRecord extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (CalibrationRecord $calibrationRecord) {
+            $calibrationRecord->gage->updateNextDueDate();
+        });
+
+        static::updated(function (CalibrationRecord $calibrationRecord) {
+            $calibrationRecord->gage->updateNextDueDate();
+        });
+
+        static::deleted(function (CalibrationRecord $calibrationRecord) {
+            $calibrationRecord->gage->updateNextDueDate();
+        });
+    }
+
     public function gage(): BelongsTo
     {
         return $this->belongsTo(Gage::class);
