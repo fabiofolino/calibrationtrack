@@ -44,6 +44,12 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::get('export/gages/pdf', [\App\Http\Controllers\ExportController::class, 'exportGagesPDF'])->name('export.gages.pdf');
         Route::get('export/calibration-records/csv', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsCSV'])->name('export.calibration-records.csv');
         Route::get('export/calibration-records/pdf', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsPDF'])->name('export.calibration-records.pdf');
+        
+        // Admin routes (admin only)
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('audit', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
+            Route::get('audit/{activity}', [\App\Http\Controllers\AuditController::class, 'show'])->name('audit.show');
+        });
     });
 });
 

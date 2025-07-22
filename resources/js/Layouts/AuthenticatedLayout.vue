@@ -45,6 +45,25 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Departments
                                 </NavLink>
+                                <NavLink
+                                    :href="route('gages.index')"
+                                    :active="route().current('gages.*')"
+                                >
+                                    Gages
+                                </NavLink>
+                                <NavLink
+                                    :href="route('calibration-records.index')"
+                                    :active="route().current('calibration-records.*')"
+                                >
+                                    Calibration Records
+                                </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.user.role === 'admin'"
+                                    :href="route('admin.audit.index')"
+                                    :active="route().current('admin.*')"
+                                >
+                                    Admin
+                                </NavLink>
                             </div>
                         </div>
 
