@@ -15,9 +15,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified', 'company.scope'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'company.scope'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'company.scope'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
