@@ -47,8 +47,17 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         
         // Admin routes (admin only)
         Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
             Route::get('audit', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
             Route::get('audit/{activity}', [\App\Http\Controllers\AuditController::class, 'show'])->name('audit.show');
+            
+            // User management routes
+            Route::get('users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('users.index');
+            Route::post('users', [\App\Http\Controllers\UserManagementController::class, 'store'])->name('users.store');
+            Route::put('users/{user}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('users.update');
+            Route::delete('users/{user}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('users.destroy');
+            Route::post('users/{user}/suspend', [\App\Http\Controllers\UserManagementController::class, 'suspend'])->name('users.suspend');
+            Route::post('users/{user}/reactivate', [\App\Http\Controllers\UserManagementController::class, 'reactivate'])->name('users.reactivate');
         });
     });
 });
