@@ -61,7 +61,7 @@ class GageCheckout extends Model
     {
         $this->update([
             'checked_in_at' => now(),
-            'notes' => $notes ? ($this->notes ? $this->notes . "\n\nCheck-in notes: " . $notes) : $this->notes,
+            'notes' => $notes ? ($this->notes ? $this->notes . "\n\nCheck-in notes: " . $notes : "Check-in notes: " . $notes) : $this->notes,
         ]);
     }
 }
