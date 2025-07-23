@@ -24,6 +24,13 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
+    // Two-Factor Authentication routes
+    Route::get('/profile/two-factor-auth', [\App\Http\Controllers\TwoFactorAuthController::class, 'show'])->name('profile.two-factor-auth');
+    Route::post('/profile/two-factor-auth/enable', [\App\Http\Controllers\TwoFactorAuthController::class, 'enable'])->name('profile.two-factor-auth.enable');
+    Route::post('/profile/two-factor-auth/confirm', [\App\Http\Controllers\TwoFactorAuthController::class, 'confirm'])->name('profile.two-factor-auth.confirm');
+    Route::delete('/profile/two-factor-auth/disable', [\App\Http\Controllers\TwoFactorAuthController::class, 'disable'])->name('profile.two-factor-auth.disable');
+    Route::post('/profile/two-factor-auth/recovery-codes', [\App\Http\Controllers\TwoFactorAuthController::class, 'generateRecoveryCodes'])->name('profile.two-factor-auth.recovery-codes');
+    
     // Subscription routes
     Route::get('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
     Route::post('/subscribe', [SubscriptionController::class, 'store'])->name('subscription.store');
