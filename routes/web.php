@@ -15,6 +15,9 @@ Route::get('/', function () {
     ]);
 });
 
+// Health check endpoint (public, no authentication required)
+Route::get('/healthz', [\App\Http\Controllers\HealthController::class, 'check'])->name('health.check');
+
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'company.scope'])
     ->name('dashboard');
