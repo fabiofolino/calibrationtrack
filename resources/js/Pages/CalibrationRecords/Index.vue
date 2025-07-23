@@ -86,6 +86,9 @@ const deleteRecord = (id) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Department
                                         </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Certificate
+                                        </th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Actions
                                         </th>
@@ -131,6 +134,20 @@ const deleteRecord = (id) => {
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900 dark:text-gray-100">
                                                 {{ record.gage.department.name }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div v-if="record.cert_file" class="text-sm">
+                                                <a 
+                                                    :href="route('calibration-records.download-certificate', record.id)"
+                                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200"
+                                                    target="_blank"
+                                                >
+                                                    📄 Download PDF
+                                                </a>
+                                            </div>
+                                            <div v-else class="text-sm text-gray-500 italic">
+                                                No certificate
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

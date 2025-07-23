@@ -105,6 +105,25 @@ defineProps({
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 md:col-span-2">
+                                <h2 class="text-lg font-semibold mb-4">Certificate</h2>
+                                <div v-if="calibrationRecord.cert_file">
+                                    <a 
+                                        :href="route('calibration-records.download-certificate', calibrationRecord.id)"
+                                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                        target="_blank"
+                                    >
+                                        📄 Download Certificate (PDF)
+                                    </a>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        Click the button above to view or download the calibration certificate.
+                                    </p>
+                                </div>
+                                <div v-else class="text-gray-500 italic">
+                                    No certificate uploaded for this calibration record.
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Actions -->

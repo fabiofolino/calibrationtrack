@@ -33,6 +33,7 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
         Route::resource('gages', \App\Http\Controllers\GageController::class);
         Route::resource('calibration-records', \App\Http\Controllers\CalibrationRecordController::class);
+        Route::get('calibration-records/{calibrationRecord}/download-certificate', [\App\Http\Controllers\CalibrationRecordController::class, 'downloadCertificate'])->name('calibration-records.download-certificate');
         
         // Gage checkout routes
         Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');

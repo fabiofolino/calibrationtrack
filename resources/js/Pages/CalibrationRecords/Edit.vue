@@ -22,6 +22,7 @@ const form = useForm({
     measured_value: props.calibrationRecord.measured_value,
     calibrated_value: props.calibrationRecord.calibrated_value,
     calibrated_at: formatDateTime(props.calibrationRecord.calibrated_at),
+    cert_file: null,
 });
 
 const submit = () => {
@@ -105,6 +106,33 @@ const submit = () => {
                                     required
                                 />
                                 <InputError class="mt-2" :message="form.errors.calibrated_at" />
+                            </div>
+
+                            <div class="mb-6">
+                                <InputLabel for="cert_file" value="Certificate (PDF)" />
+                                <div v-if="calibrationRecord.cert_file" class="mb-2">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Current certificate: 
+                                        <a 
+                                            :href="route('calibration-records.download-certificate', calibrationRecord.id)"
+                                            class="text-blue-600 hover:text-blue-800 underline"
+                                            target="_blank"
+                                        >
+                                            Download Current Certificate
+                                        </a>
+                                    </p>
+                                </div>
+                                <input
+                                    id="cert_file"
+                                    type="file"
+                                    accept=".pdf"
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    @change="form.cert_file = $event.target.files[0]"
+                                />
+                                <p class="mt-1 text-sm text-gray-500">
+                                    {{ calibrationRecord.cert_file ? 'Optional: Upload a new PDF certificate to replace the current one (max 10MB)' : 'Optional: Upload a PDF certificate (max 10MB)' }}
+                                </p>
+                                <InputError class="mt-2" :message="form.errors.cert_file" />
                             </div>
 
                             <div class="flex items-center gap-4">

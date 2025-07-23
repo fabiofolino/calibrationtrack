@@ -16,6 +16,7 @@ const form = useForm({
     measured_value: '',
     calibrated_value: '',
     calibrated_at: new Date().toISOString().slice(0, 16), // Current datetime in YYYY-MM-DDTHH:MM format
+    cert_file: null,
 });
 
 const submit = () => {
@@ -100,6 +101,19 @@ const submit = () => {
                                     required
                                 />
                                 <InputError class="mt-2" :message="form.errors.calibrated_at" />
+                            </div>
+
+                            <div class="mb-6">
+                                <InputLabel for="cert_file" value="Certificate (PDF)" />
+                                <input
+                                    id="cert_file"
+                                    type="file"
+                                    accept=".pdf"
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    @change="form.cert_file = $event.target.files[0]"
+                                />
+                                <p class="mt-1 text-sm text-gray-500">Optional: Upload a PDF certificate (max 10MB)</p>
+                                <InputError class="mt-2" :message="form.errors.cert_file" />
                             </div>
 
                             <div class="flex items-center gap-4">
