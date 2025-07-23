@@ -15,9 +15,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified', 'company.scope'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'company.scope'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'company.scope'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -38,6 +38,27 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');
         Route::post('gages/{gage}/checkin', [\App\Http\Controllers\GageCheckoutController::class, 'checkin'])->name('gages.checkin');
         Route::get('gages/{gage}/checkout-history', [\App\Http\Controllers\GageCheckoutController::class, 'history'])->name('gages.checkout-history');
+        
+        // Export routes
+        Route::get('export/gages/csv', [\App\Http\Controllers\ExportController::class, 'exportGagesCSV'])->name('export.gages.csv');
+        Route::get('export/gages/pdf', [\App\Http\Controllers\ExportController::class, 'exportGagesPDF'])->name('export.gages.pdf');
+        Route::get('export/calibration-records/csv', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsCSV'])->name('export.calibration-records.csv');
+        Route::get('export/calibration-records/pdf', [\App\Http\Controllers\ExportController::class, 'exportCalibrationRecordsPDF'])->name('export.calibration-records.pdf');
+        
+        // Admin routes (admin only)
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+            Route::get('audit', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
+            Route::get('audit/{activity}', [\App\Http\Controllers\AuditController::class, 'show'])->name('audit.show');
+            
+            // User management routes
+            Route::get('users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('users.index');
+            Route::post('users', [\App\Http\Controllers\UserManagementController::class, 'store'])->name('users.store');
+            Route::put('users/{user}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('users.update');
+            Route::delete('users/{user}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('users.destroy');
+            Route::post('users/{user}/suspend', [\App\Http\Controllers\UserManagementController::class, 'suspend'])->name('users.suspend');
+            Route::post('users/{user}/reactivate', [\App\Http\Controllers\UserManagementController::class, 'reactivate'])->name('users.reactivate');
+        });
     });
 });
 
