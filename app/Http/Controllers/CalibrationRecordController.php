@@ -63,18 +63,28 @@ class CalibrationRecordController extends Controller
             'measured_value' => 'required|numeric',
             'calibrated_value' => 'required|numeric',
             'calibrated_at' => 'required|date',
+            'cert_file' => 'nullable|file|mimes:pdf|max:10240', // 10MB max
         ]);
 
         // Verify gage belongs to user's company
         $gage = auth()->user()->company->gages()->findOrFail($request->gage_id);
 
-        CalibrationRecord::create([
+        $data = [
             'gage_id' => $request->gage_id,
             'measured_value' => $request->measured_value,
             'calibrated_value' => $request->calibrated_value,
             'calibrated_at' => $request->calibrated_at,
             'user_id' => auth()->id(),
-        ]);
+        ];
+
+        // Handle file upload
+        if ($request->hasFile('cert_file')) {
+            $file = $request->file('cert_file');
+            $filename = uniqid() . '_' . $file->getClientOriginalName();
+            $data['cert_file'] = $file->storeAs('calibration-certificates', $filename, 'public');
+        }
+
+        CalibrationRecord::create($data);
 
         return redirect()->route('calibration-records.index', ['gage_id' => $request->gage_id])
             ->with('success', 'Calibration record created successfully.');
@@ -121,17 +131,32 @@ class CalibrationRecordController extends Controller
             'measured_value' => 'required|numeric',
             'calibrated_value' => 'required|numeric',
             'calibrated_at' => 'required|date',
+            'cert_file' => 'nullable|file|mimes:pdf|max:10240', // 10MB max
         ]);
 
         // Verify gage belongs to user's company
         $gage = auth()->user()->company->gages()->findOrFail($request->gage_id);
 
-        $calibrationRecord->update([
+        $data = [
             'gage_id' => $request->gage_id,
             'measured_value' => $request->measured_value,
             'calibrated_value' => $request->calibrated_value,
             'calibrated_at' => $request->calibrated_at,
-        ]);
+        ];
+
+        // Handle file upload
+        if ($request->hasFile('cert_file')) {
+            // Delete old file if it exists
+            if ($calibrationRecord->cert_file) {
+                \Storage::disk('public')->delete($calibrationRecord->cert_file);
+            }
+            
+            $file = $request->file('cert_file');
+            $filename = uniqid() . '_' . $file->getClientOriginalName();
+            $data['cert_file'] = $file->storeAs('calibration-certificates', $filename, 'public');
+        }
+
+        $calibrationRecord->update($data);
 
         return redirect()->route('calibration-records.index', ['gage_id' => $calibrationRecord->gage_id])
             ->with('success', 'Calibration record updated successfully.');
@@ -145,9 +170,29 @@ class CalibrationRecordController extends Controller
         $this->authorize('delete', $calibrationRecord);
 
         $gageId = $calibrationRecord->gage_id;
+        
+        // Delete associated file if it exists
+        if ($calibrationRecord->cert_file) {
+            \Storage::disk('public')->delete($calibrationRecord->cert_file);
+        }
+        
         $calibrationRecord->delete();
 
         return redirect()->route('calibration-records.index', ['gage_id' => $gageId])
             ->with('success', 'Calibration record deleted successfully.');
+    }
+
+    /**
+     * Download the calibration certificate.
+     */
+    public function downloadCertificate(CalibrationRecord $calibrationRecord)
+    {
+        $this->authorize('view', $calibrationRecord);
+
+        if (!$calibrationRecord->cert_file || !$calibrationRecord->hasCertificate()) {
+            abort(404, 'Certificate not found.');
+        }
+
+        return \Storage::disk('public')->download($calibrationRecord->cert_file);
     }
 }

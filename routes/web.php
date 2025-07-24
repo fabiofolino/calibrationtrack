@@ -15,6 +15,9 @@ Route::get('/', function () {
     ]);
 });
 
+// Health check endpoint (public, no authentication required)
+Route::get('/healthz', [\App\Http\Controllers\HealthController::class, 'check'])->name('health.check');
+
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'company.scope'])
     ->name('dashboard');
@@ -23,6 +26,13 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Two-Factor Authentication routes
+    Route::get('/profile/two-factor-auth', [\App\Http\Controllers\TwoFactorAuthController::class, 'show'])->name('profile.two-factor-auth');
+    Route::post('/profile/two-factor-auth/enable', [\App\Http\Controllers\TwoFactorAuthController::class, 'enable'])->name('profile.two-factor-auth.enable');
+    Route::post('/profile/two-factor-auth/confirm', [\App\Http\Controllers\TwoFactorAuthController::class, 'confirm'])->name('profile.two-factor-auth.confirm');
+    Route::delete('/profile/two-factor-auth/disable', [\App\Http\Controllers\TwoFactorAuthController::class, 'disable'])->name('profile.two-factor-auth.disable');
+    Route::post('/profile/two-factor-auth/recovery-codes', [\App\Http\Controllers\TwoFactorAuthController::class, 'generateRecoveryCodes'])->name('profile.two-factor-auth.recovery-codes');
     
     // Subscription routes
     Route::get('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
@@ -33,6 +43,7 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
         Route::resource('gages', \App\Http\Controllers\GageController::class);
         Route::resource('calibration-records', \App\Http\Controllers\CalibrationRecordController::class);
+        Route::get('calibration-records/{calibrationRecord}/download-certificate', [\App\Http\Controllers\CalibrationRecordController::class, 'downloadCertificate'])->name('calibration-records.download-certificate');
         
         // Gage checkout routes
         Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');
