@@ -17,6 +17,13 @@ class Company extends Model
         'address',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'trial_ends_at' => 'datetime',
+        ];
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
