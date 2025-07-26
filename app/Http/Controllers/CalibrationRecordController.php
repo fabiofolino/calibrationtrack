@@ -97,7 +97,13 @@ class CalibrationRecordController extends Controller
     {
         $this->authorize('view', $calibrationRecord);
         
-        $calibrationRecord->load(['gage.department', 'user']);
+        $calibrationRecord->load([
+            'gage.department', 
+            'user',
+            'measurementGroups.measurements' => function ($query) {
+                $query->orderBy('sequence');
+            }
+        ]);
 
         return Inertia::render('CalibrationRecords/Show', [
             'calibrationRecord' => $calibrationRecord,

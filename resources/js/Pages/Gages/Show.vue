@@ -44,7 +44,7 @@ const submitCheckin = () => {
 
 <template>
     <AuthenticatedLayout>
-        <Head :title="`Gage: ${gage.name}`" />
+        <Head :title="`Gage: ${gage.gage_id}`" />
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -58,7 +58,7 @@ const submitCheckin = () => {
                                 >
                                     ← Back to Gages
                                 </Link>
-                                <h1 class="text-2xl font-bold">{{ gage.name }}</h1>
+                                <h1 class="text-2xl font-bold">{{ gage.gage_id }} - {{ gage.description || 'No Description' }}</h1>
                             </div>
                             <div class="flex space-x-2">
                                 <Link :href="route('gages.edit', gage.id)">
@@ -90,8 +90,32 @@ const submitCheckin = () => {
                                 <h2 class="text-lg font-semibold mb-4">Gage Information</h2>
                                 <div class="space-y-3">
                                     <div>
+                                        <span class="font-medium">Gage ID:</span>
+                                        <span class="ml-2">{{ gage.gage_id }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Description:</span>
+                                        <span class="ml-2">{{ gage.description || 'N/A' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Model:</span>
+                                        <span class="ml-2">{{ gage.model || 'N/A' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Manufacturer:</span>
+                                        <span class="ml-2">{{ gage.manufacturer || 'N/A' }}</span>
+                                    </div>
+                                    <div>
                                         <span class="font-medium">Serial Number:</span>
                                         <span class="ml-2">{{ gage.serial_number }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Location:</span>
+                                        <span class="ml-2">{{ gage.location }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Custodian:</span>
+                                        <span class="ml-2">{{ gage.custodian }}</span>
                                     </div>
                                     <div>
                                         <span class="font-medium">Department:</span>
@@ -303,6 +327,56 @@ const submitCheckin = () => {
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+
+                        <!-- Tolerance Records -->
+                        <div v-if="gage.tolerance_records && gage.tolerance_records.length > 0" class="mb-8 bg-red-50 dark:bg-red-900 rounded-lg p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-semibold text-red-800 dark:text-red-200">Out-of-Tolerance Records</h2>
+                                <Link 
+                                    :href="route('gage-tolerance-records.index')"
+                                    class="text-red-600 hover:text-red-800"
+                                >
+                                    View All →
+                                </Link>
+                            </div>
+                            <div class="space-y-3">
+                                <div 
+                                    v-for="record in gage.tolerance_records.slice(0, 3)" 
+                                    :key="record.id"
+                                    class="bg-white dark:bg-gray-800 rounded p-4"
+                                >
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span 
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full mb-2"
+                                                :class="{
+                                                    'bg-red-100 text-red-800': record.status === 'out_of_tolerance',
+                                                    'bg-yellow-100 text-yellow-800': record.status === 'under_review',
+                                                    'bg-green-100 text-green-800': record.status === 'resolved'
+                                                }"
+                                            >
+                                                {{ record.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
+                                            </span>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                                <strong>Risk:</strong> {{ record.risk_assessment.substring(0, 100) }}...
+                                            </p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                                <strong>Actions:</strong> {{ record.corrective_actions.substring(0, 100) }}...
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-2">
+                                                Identified: {{ new Date(record.identified_at).toLocaleDateString() }}
+                                            </p>
+                                        </div>
+                                        <Link 
+                                            :href="route('gage-tolerance-records.show', record.id)"
+                                            class="text-blue-600 hover:text-blue-800 text-sm"
+                                        >
+                                            View Details
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

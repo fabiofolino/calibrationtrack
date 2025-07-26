@@ -57,8 +57,13 @@ class GageController extends Controller
 
         $request->validate([
             'department_id' => 'required|exists:departments,id',
-            'name' => 'required|string|max:255',
+            'gage_id' => 'required|string|max:255|unique:gages',
+            'description' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'manufacturer' => 'nullable|string|max:255',
             'serial_number' => 'required|string|max:255|unique:gages',
+            'location' => 'required|string|max:255',
+            'custodian' => 'required|string|max:255',
             'frequency_days' => 'required|integer|min:1',
         ]);
 
@@ -66,7 +71,8 @@ class GageController extends Controller
         $department = auth()->user()->company->departments()->findOrFail($request->department_id);
 
         Gage::create($request->only([
-            'department_id', 'name', 'serial_number', 'frequency_days'
+            'department_id', 'gage_id', 'description', 'model', 'manufacturer', 
+            'serial_number', 'location', 'custodian', 'frequency_days'
         ]));
 
         return redirect()->route('gages.index')
@@ -87,6 +93,9 @@ class GageController extends Controller
             },
             'checkouts' => function ($query) {
                 $query->with('user')->latest()->limit(5);
+            },
+            'toleranceRecords' => function ($query) {
+                $query->with(['user', 'calibrationRecord'])->latest();
             }
         ]);
 
@@ -126,8 +135,13 @@ class GageController extends Controller
 
         $request->validate([
             'department_id' => 'required|exists:departments,id',
-            'name' => 'required|string|max:255',
+            'gage_id' => 'required|string|max:255|unique:gages,gage_id,' . $gage->id,
+            'description' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'manufacturer' => 'nullable|string|max:255',
             'serial_number' => 'required|string|max:255|unique:gages,serial_number,' . $gage->id,
+            'location' => 'required|string|max:255',
+            'custodian' => 'required|string|max:255',
             'frequency_days' => 'required|integer|min:1',
         ]);
 
@@ -135,7 +149,8 @@ class GageController extends Controller
         $department = auth()->user()->company->departments()->findOrFail($request->department_id);
 
         $gage->update($request->only([
-            'department_id', 'name', 'serial_number', 'frequency_days'
+            'department_id', 'gage_id', 'description', 'model', 'manufacturer',
+            'serial_number', 'location', 'custodian', 'frequency_days'
         ]));
 
         return redirect()->route('gages.index')

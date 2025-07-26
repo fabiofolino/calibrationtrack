@@ -22,7 +22,8 @@ class CalibrationRecordsExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Gage Name',
+            'Gage ID',
+            'Gage Description',
             'Gage Serial Number',
             'Department',
             'Measured Value',

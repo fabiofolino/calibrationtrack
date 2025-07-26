@@ -24,8 +24,13 @@ class ExportController extends Controller
 
         $data = $gages->map(function ($gage) {
             return [
-                'Name' => $gage->name,
+                'Gage ID' => $gage->gage_id,
+                'Description' => $gage->description,
+                'Model' => $gage->model ?? 'N/A',
+                'Manufacturer' => $gage->manufacturer ?? 'N/A',
                 'Serial Number' => $gage->serial_number,
+                'Location' => $gage->location,
+                'Custodian' => $gage->custodian,
                 'Department' => $gage->department->name,
                 'Frequency (Days)' => $gage->frequency_days,
                 'Next Due Date' => $gage->next_due_date ? $gage->next_due_date->format('Y-m-d') : 'N/A',
@@ -76,7 +81,8 @@ class ExportController extends Controller
 
         $data = $records->map(function ($record) {
             return [
-                'Gage Name' => $record->gage->name,
+                'Gage ID' => $record->gage->gage_id,
+                'Gage Description' => $record->gage->description,
                 'Gage Serial Number' => $record->gage->serial_number,
                 'Department' => $record->gage->department->name,
                 'Measured Value' => $record->measured_value,

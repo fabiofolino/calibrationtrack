@@ -22,8 +22,13 @@ class GagesExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Name',
-            'Serial Number', 
+            'Gage ID',
+            'Description',
+            'Model',
+            'Manufacturer',
+            'Serial Number',
+            'Location',
+            'Custodian',
             'Department',
             'Frequency (Days)',
             'Next Due Date',

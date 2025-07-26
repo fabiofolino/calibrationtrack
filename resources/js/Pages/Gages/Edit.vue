@@ -13,8 +13,13 @@ const props = defineProps({
 
 const form = useForm({
     department_id: props.gage.department_id,
-    name: props.gage.name,
+    gage_id: props.gage.gage_id,
+    description: props.gage.description,
+    model: props.gage.model,
+    manufacturer: props.gage.manufacturer,
     serial_number: props.gage.serial_number,
+    location: props.gage.location,
+    custodian: props.gage.custodian,
     frequency_days: props.gage.frequency_days,
 });
 
@@ -63,16 +68,49 @@ const submit = () => {
                             </div>
 
                             <div class="mb-4">
-                                <InputLabel for="name" value="Gage Name *" />
+                                <InputLabel for="gage_id" value="Gage ID *" />
                                 <TextInput
-                                    id="name"
+                                    id="gage_id"
                                     type="text"
                                     class="mt-1 block w-full"
-                                    v-model="form.name"
+                                    v-model="form.gage_id"
                                     required
                                     autofocus
                                 />
-                                <InputError class="mt-2" :message="form.errors.name" />
+                                <InputError class="mt-2" :message="form.errors.gage_id" />
+                            </div>
+
+                            <div class="mb-4">
+                                <InputLabel for="description" value="Description" />
+                                <TextInput
+                                    id="description"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.description"
+                                />
+                                <InputError class="mt-2" :message="form.errors.description" />
+                            </div>
+
+                            <div class="mb-4">
+                                <InputLabel for="model" value="Model" />
+                                <TextInput
+                                    id="model"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.model"
+                                />
+                                <InputError class="mt-2" :message="form.errors.model" />
+                            </div>
+
+                            <div class="mb-4">
+                                <InputLabel for="manufacturer" value="Manufacturer" />
+                                <TextInput
+                                    id="manufacturer"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.manufacturer"
+                                />
+                                <InputError class="mt-2" :message="form.errors.manufacturer" />
                             </div>
 
                             <div class="mb-4">
@@ -85,6 +123,30 @@ const submit = () => {
                                     required
                                 />
                                 <InputError class="mt-2" :message="form.errors.serial_number" />
+                            </div>
+
+                            <div class="mb-4">
+                                <InputLabel for="location" value="Location *" />
+                                <TextInput
+                                    id="location"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.location"
+                                    required
+                                />
+                                <InputError class="mt-2" :message="form.errors.location" />
+                            </div>
+
+                            <div class="mb-4">
+                                <InputLabel for="custodian" value="Custodian *" />
+                                <TextInput
+                                    id="custodian"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    v-model="form.custodian"
+                                    required
+                                />
+                                <InputError class="mt-2" :message="form.errors.custodian" />
                             </div>
 
                             <div class="mb-6">

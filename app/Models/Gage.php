@@ -15,8 +15,13 @@ class Gage extends Model
 
     protected $fillable = [
         'department_id',
-        'name',
+        'gage_id',
+        'description',
+        'model',
+        'manufacturer',
         'serial_number',
+        'location',
+        'custodian',
         'frequency_days',
         'next_due_date',
     ];
@@ -31,7 +36,7 @@ class Gage extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'serial_number', 'frequency_days', 'next_due_date', 'department_id'])
+            ->logOnly(['gage_id', 'description', 'model', 'manufacturer', 'serial_number', 'location', 'custodian', 'frequency_days', 'next_due_date', 'department_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -49,6 +54,11 @@ class Gage extends Model
     public function checkouts(): HasMany
     {
         return $this->hasMany(GageCheckout::class);
+    }
+
+    public function toleranceRecords(): HasMany
+    {
+        return $this->hasMany(GageToleranceRecord::class);
     }
 
     /**

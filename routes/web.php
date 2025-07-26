@@ -45,6 +45,14 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
         Route::resource('calibration-records', \App\Http\Controllers\CalibrationRecordController::class);
         Route::get('calibration-records/{calibrationRecord}/download-certificate', [\App\Http\Controllers\CalibrationRecordController::class, 'downloadCertificate'])->name('calibration-records.download-certificate');
         
+        // Measurement groups routes
+        Route::resource('measurement-groups', \App\Http\Controllers\MeasurementGroupController::class);
+        Route::post('measurement-groups/{measurementGroup}/update-measurements', [\App\Http\Controllers\MeasurementGroupController::class, 'updateMeasurements'])->name('measurement-groups.update-measurements');
+        
+        // Gage tolerance records routes
+        Route::resource('gage-tolerance-records', \App\Http\Controllers\GageToleranceRecordController::class);
+        Route::post('gage-tolerance-records/{gageToleranceRecord}/resolve', [\App\Http\Controllers\GageToleranceRecordController::class, 'resolve'])->name('gage-tolerance-records.resolve');
+        
         // Gage checkout routes
         Route::post('gages/{gage}/checkout', [\App\Http\Controllers\GageCheckoutController::class, 'checkout'])->name('gages.checkout');
         Route::post('gages/{gage}/checkin', [\App\Http\Controllers\GageCheckoutController::class, 'checkin'])->name('gages.checkin');
