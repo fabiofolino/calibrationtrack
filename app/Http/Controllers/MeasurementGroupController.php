@@ -221,9 +221,6 @@ class MeasurementGroupController extends Controller
             $measurement->save();
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Measurements updated successfully.',
-        ]);
+        return back()->with('success', 'Measurements updated successfully.');
     }
 }

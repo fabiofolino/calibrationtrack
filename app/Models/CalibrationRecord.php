@@ -82,4 +82,21 @@ class CalibrationRecord extends Model
     {
         return !empty($this->cert_file) && \Storage::disk('public')->exists($this->cert_file);
     }
+
+    /**
+     * Check if this calibration record uses the detailed measurement workflow
+     */
+    public function usesDetailedWorkflow(): bool
+    {
+        return $this->measurementGroups()->exists();
+    }
+
+    /**
+     * Check if this calibration record uses the simple legacy workflow
+     */
+    public function usesSimpleWorkflow(): bool
+    {
+        return !$this->usesDetailedWorkflow() && 
+               ($this->measured_value != 0 || $this->calibrated_value != 0);
+    }
 }

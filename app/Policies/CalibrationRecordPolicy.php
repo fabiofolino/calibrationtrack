@@ -45,7 +45,37 @@ class CalibrationRecordPolicy
      */
     public function delete(User $user, CalibrationRecord $calibrationRecord): bool
     {
-        return $user->company_id === $calibrationRecord->gage->department->company_id;
+        // First check if user belongs to the same company
+        if ($user->company_id !== $calibrationRecord->gage->department->company_id) {
+            return false;
+        }
+
+        // Admins can delete any calibration record in their company
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Regular users can only delete their own calibration records
+        if ($calibrationRecord->user_id !== $user->id) {
+            return false;
+        }
+
+        // Prevent deletion of calibration records older than 30 days
+        // This helps maintain data integrity for compliance
+        $thirtyDaysAgo = now()->subDays(30);
+        if ($calibrationRecord->created_at->lt($thirtyDaysAgo)) {
+            return false;
+        }
+
+        // Don't allow deletion if there are measurement groups with data
+        // This prevents accidental loss of detailed measurement data
+        if ($calibrationRecord->measurementGroups()->whereHas('measurements', function($query) {
+            $query->whereNotNull('as_found_value')->orWhereNotNull('as_left_value');
+        })->exists()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

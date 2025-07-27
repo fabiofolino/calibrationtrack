@@ -6,12 +6,53 @@ import { Head, Link, router } from '@inertiajs/vue3';
 const props = defineProps({
     calibrationRecords: Array,
     gage_id: String,
+    user: Object,
 });
 
-const deleteRecord = (id) => {
-    if (confirm('Are you sure you want to delete this calibration record?')) {
-        router.delete(route('calibration-records.destroy', id));
+const deleteRecord = (record) => {
+    // Additional client-side check with helpful messages
+    if (!record.can_delete) {
+        if (!props.user.is_admin && record.user.id !== props.user.id) {
+            alert('You can only delete your own calibration records.');
+        } else if (isOlderThan30Days(record.created_at)) {
+            alert('Cannot delete calibration records older than 30 days.');
+        } else if (hasDetailedMeasurements(record)) {
+            alert('Cannot delete calibration records with detailed measurement data.');
+        } else {
+            alert('You do not have permission to delete this calibration record.');
+        }
+        return;
     }
+
+    if (confirm('Are you sure you want to delete this calibration record? This action cannot be undone.')) {
+        router.delete(route('calibration-records.destroy', record.id));
+    }
+};
+
+const isOlderThan30Days = (createdAt) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return new Date(createdAt) < thirtyDaysAgo;
+};
+
+const hasDetailedMeasurements = (record) => {
+    // This is a simplified check - the real check is done server-side
+    return record.measurement_groups && record.measurement_groups.length > 0;
+};
+
+const getDeletionTooltip = (record) => {
+    if (record.can_delete) return 'Delete this calibration record';
+    
+    if (!props.user.is_admin && record.user.id !== props.user.id) {
+        return 'You can only delete your own records';
+    }
+    if (isOlderThan30Days(record.created_at)) {
+        return 'Cannot delete records older than 30 days';
+    }
+    if (hasDetailedMeasurements(record)) {
+        return 'Cannot delete records with measurement data';
+    }
+    return 'You do not have permission to delete this record';
 };
 </script>
 
@@ -165,11 +206,20 @@ const deleteRecord = (id) => {
                                                     Edit
                                                 </Link>
                                                 <button 
-                                                    @click="deleteRecord(record.id)"
-                                                    class="text-red-600 hover:text-red-800"
+                                                    v-if="record.can_delete"
+                                                    @click="deleteRecord(record)"
+                                                    class="text-red-600 hover:text-red-800 transition-colors"
+                                                    :title="getDeletionTooltip(record)"
                                                 >
                                                     Delete
                                                 </button>
+                                                <span 
+                                                    v-else
+                                                    class="text-gray-400 cursor-not-allowed"
+                                                    :title="getDeletionTooltip(record)"
+                                                >
+                                                    Delete
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>

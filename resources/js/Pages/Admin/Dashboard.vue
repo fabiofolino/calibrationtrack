@@ -68,7 +68,7 @@ const props = defineProps({
                 </div>
 
                 <!-- Admin Actions -->
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- User Management -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
@@ -100,6 +100,43 @@ const props = defineProps({
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Manage user roles</span>
+                                    <span class="text-gray-900">✓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscription Management -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">Subscription Management</h3>
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        Manage company subscription and billing
+                                    </p>
+                                </div>
+                                <div class="text-purple-500 text-6xl">💳</div>
+                            </div>
+                            <div class="mt-6">
+                                <Link 
+                                    :href="route('admin.subscription.index')"
+                                    class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                >
+                                    Manage Subscription
+                                </Link>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">View subscription status</span>
+                                    <span class="text-gray-900">✓</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Cancel/resume subscription</span>
+                                    <span class="text-gray-900">✓</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Extend trial periods</span>
                                     <span class="text-gray-900">✓</span>
                                 </div>
                             </div>

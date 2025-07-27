@@ -16,21 +16,36 @@ defineProps({
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center">
-                                <Link 
-                                    :href="route('calibration-records.index', { gage_id: calibrationRecord.gage_id })"
-                                    class="text-blue-600 hover:text-blue-800 mr-4"
-                                >
-                                    ← Back to Calibration Records
-                                </Link>
+                        <div class="flex items-center mb-6">
+                            <Link 
+                                :href="route('calibration-records.index', { gage_id: calibrationRecord.gage_id })"
+                                class="text-blue-600 hover:text-blue-800 mr-4"
+                            >
+                                ← Back to Calibration Records
+                            </Link>
+                            <div class="flex-1">
                                 <h1 class="text-2xl font-bold">Calibration Record Details</h1>
+                                <div class="flex items-center mt-2 space-x-4">
+                                    <span v-if="calibrationRecord.measurement_groups && calibrationRecord.measurement_groups.length > 0" 
+                                          class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                        Detailed Measurements
+                                    </span>
+                                    <span v-else-if="calibrationRecord.measured_value && calibrationRecord.calibrated_value" 
+                                          class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
+                                        Simple Record
+                                    </span>
+                                    <span v-else 
+                                          class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                        Incomplete - Add Measurements
+                                    </span>
+                                </div>
                             </div>
                             <div class="flex space-x-2">
                                 <Link :href="route('calibration-records.edit', calibrationRecord.id)">
                                     <PrimaryButton>Edit Record</PrimaryButton>
                                 </Link>
-                                <Link :href="route('measurement-groups.create', { calibration_record_id: calibrationRecord.id })">
+                                <Link v-if="!calibrationRecord.measurement_groups || calibrationRecord.measurement_groups.length === 0" 
+                                      :href="route('measurement-groups.create', { calibration_record_id: calibrationRecord.id })">
                                     <PrimaryButton class="bg-green-600 hover:bg-green-700">Add Measurement Group</PrimaryButton>
                                 </Link>
                             </div>

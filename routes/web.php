@@ -70,6 +70,13 @@ Route::middleware(['auth', 'company.scope'])->group(function () {
             Route::get('audit', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
             Route::get('audit/{activity}', [\App\Http\Controllers\AuditController::class, 'show'])->name('audit.show');
             
+            // Subscription management routes
+            Route::get('subscription', [\App\Http\Controllers\Admin\SubscriptionManagementController::class, 'index'])->name('subscription.index');
+            Route::post('subscription', [\App\Http\Controllers\Admin\SubscriptionManagementController::class, 'store'])->name('subscription.store');
+            Route::post('subscription/cancel', [\App\Http\Controllers\Admin\SubscriptionManagementController::class, 'cancel'])->name('subscription.cancel');
+            Route::post('subscription/resume', [\App\Http\Controllers\Admin\SubscriptionManagementController::class, 'resume'])->name('subscription.resume');
+            Route::post('subscription/extend-trial', [\App\Http\Controllers\Admin\SubscriptionManagementController::class, 'extendTrial'])->name('subscription.extend-trial');
+            
             // User management routes
             Route::get('users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('users.index');
             Route::post('users', [\App\Http\Controllers\UserManagementController::class, 'store'])->name('users.store');

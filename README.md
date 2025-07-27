@@ -1,61 +1,307 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CalibrationTrack
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive web-based calibration management system built with Laravel and Vue.js for tracking measurement gages, calibration records, and compliance requirements.
 
-## About Laravel
+![Laravel](https://img.shields.io/badge/Laravel-11.x-red?style=flat-square&logo=laravel)
+![Vue.js](https://img.shields.io/badge/Vue.js-3.x-green?style=flat-square&logo=vue.js)
+![PHP](https://img.shields.io/badge/PHP-8.2+-blue?style=flat-square&logo=php)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🎯 Overview
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+CalibrationTrack is a modern, multi-tenant calibration management system designed for organizations that need to track and manage measurement equipment calibrations. The system provides comprehensive tracking of gages, calibration schedules, measurement data, and compliance reporting.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Key Features
 
-## Learning Laravel
+- **🏢 Multi-Tenant Architecture** - Secure company-based data isolation
+- **📏 Gage Management** - Complete lifecycle tracking of measurement equipment
+- **📊 Detailed Measurements** - Advanced measurement groups with tolerance tracking
+- **📅 Calibration Scheduling** - Automated due date tracking and reminders
+- **📈 Compliance Reporting** - Comprehensive audit trails and export capabilities
+- **💳 Subscription Management** - Integrated billing with Stripe
+- **🔐 Role-Based Access** - Admin and user role management
+- **📱 Responsive Design** - Modern, mobile-friendly interface
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Quick Start
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Prerequisites
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2 or higher
+- Composer
+- Node.js 18+ and npm
+- MySQL 8.0+ or PostgreSQL 13+
+- Redis (optional, for caching and queues)
 
-## Laravel Sponsors
+### Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/calibrationtrack.git
+   cd calibrationtrack
+   ```
 
-### Premium Partners
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. **Install Node.js dependencies**
+   ```bash
+   npm install
+   ```
 
-## Contributing
+4. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5. **Configure your `.env` file**
+   ```env
+   APP_NAME=CalibrationTrack
+   APP_URL=http://localhost:8000
+   
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=calibrationtrack
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   
+   # Stripe Configuration (optional)
+   STRIPE_KEY=your_stripe_publishable_key
+   STRIPE_SECRET=your_stripe_secret_key
+   CASHIER_PRICE_ID=your_stripe_price_id
+   
+   # Mail Configuration
+   MAIL_MAILER=smtp
+   MAIL_HOST=your_mail_host
+   MAIL_PORT=587
+   MAIL_USERNAME=your_mail_username
+   MAIL_PASSWORD=your_mail_password
+   ```
 
-## Code of Conduct
+6. **Database setup**
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+7. **Build assets**
+   ```bash
+   npm run build
+   ```
 
-## Security Vulnerabilities
+8. **Start the development server**
+   ```bash
+   php artisan serve
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Visit `http://localhost:8000` to access the application.
 
-## License
+## 🏗️ Architecture
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Technology Stack
+
+- **Backend**: Laravel 11.x with PHP 8.2+
+- **Frontend**: Vue.js 3 with Inertia.js
+- **Styling**: Tailwind CSS
+- **Database**: MySQL/PostgreSQL with Eloquent ORM
+- **Authentication**: Laravel Fortify with 2FA support
+- **Payments**: Laravel Cashier with Stripe
+- **File Storage**: Laravel Storage (supports local, S3, etc.)
+- **Testing**: PHPUnit with Feature and Unit tests
+
+### Project Structure
+
+```
+app/
+├── Http/Controllers/          # Application controllers
+├── Models/                    # Eloquent models
+├── Policies/                  # Authorization policies
+├── Mail/                      # Email templates
+├── Exports/                   # Data export classes
+└── Console/Commands/          # Artisan commands
+
+resources/
+├── js/                        # Vue.js components and pages
+├── css/                       # Tailwind CSS styles
+└── views/                     # Blade templates
+
+database/
+├── migrations/                # Database schema migrations
+├── factories/                 # Model factories for testing
+└── seeders/                   # Database seeders
+```
+
+## 📋 Core Features
+
+### Gage Management
+- Complete gage lifecycle tracking
+- Department-based organization
+- Location and custodian management
+- Calibration frequency scheduling
+- Checkout/checkin functionality
+
+### Measurement Groups
+- Advanced measurement point definition
+- Multiple tolerance types (percentage, plus/minus, limits)
+- As Found / As Left value tracking
+- Automatic pass/fail calculation
+- Uncertainty and standards tracking
+
+### Calibration Records
+- Dual workflow support (simple and detailed)
+- Certificate file attachments
+- Automatic due date calculation
+- Comprehensive audit logging
+
+### Subscription Management
+- Freemium model with gage limits
+- Stripe integration for payments
+- Trial period support
+- Admin subscription management
+
+### Reporting & Exports
+- CSV and PDF export capabilities
+- Calibration certificates
+- Compliance reporting
+- Audit trail tracking
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_NAME` | Application name | CalibrationTrack |
+| `APP_ENV` | Environment (local, production) | local |
+| `DB_CONNECTION` | Database driver | mysql |
+| `STRIPE_KEY` | Stripe publishable key | - |
+| `STRIPE_SECRET` | Stripe secret key | - |
+| `MAIL_MAILER` | Mail driver | smtp |
+
+### Stripe Configuration
+
+For subscription functionality, configure Stripe in your `.env`:
+
+```env
+STRIPE_KEY=pk_test_your_publishable_key
+STRIPE_SECRET=sk_test_your_secret_key
+CASHIER_PRICE_ID=price_your_price_id
+```
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test types
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run with coverage
+php artisan test --coverage
+```
+
+## 📦 Deployment
+
+### Production Setup
+
+1. **Server Requirements**
+   - PHP 8.2+ with required extensions
+   - Composer
+   - Web server (Apache/Nginx)
+   - Database server
+   - SSL certificate
+
+2. **Environment Configuration**
+   ```bash
+   # Set environment to production
+   APP_ENV=production
+   APP_DEBUG=false
+   
+   # Configure production database and cache
+   # Set up proper mail configuration
+   # Configure file storage (S3 recommended)
+   ```
+
+3. **Deployment Commands**
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   npm run build
+   ```
+
+### Docker Deployment
+
+Use the included `docker-compose.yml`:
+
+```bash
+docker-compose up -d
+```
+
+## 🔒 Security
+
+- Multi-tenant data isolation
+- CSRF protection
+- SQL injection prevention
+- XSS protection
+- Two-factor authentication support
+- Role-based access control
+- Audit logging
+
+## 📧 Email & Notifications
+
+### Calibration Reminders
+
+Automated email reminders for upcoming calibrations:
+
+```bash
+# Send calibration reminders (run daily via cron)
+php artisan calibration:reminders
+
+# Dry run to see what emails would be sent
+php artisan calibration:reminders --dry-run
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow PSR-12 coding standards
+- Write tests for new features
+- Update documentation as needed
+- Use semantic commit messages
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Documentation**: Check the inline documentation and comments
+- **Issues**: Report bugs via GitHub Issues
+- **Email**: contact@yourcompany.com
+
+## 🙏 Acknowledgments
+
+- Built with [Laravel](https://laravel.com)
+- Frontend powered by [Vue.js](https://vuejs.org) and [Inertia.js](https://inertiajs.com)
+- Styled with [Tailwind CSS](https://tailwindcss.com)
+- Payments by [Stripe](https://stripe.com)
+
+---
+
+**CalibrationTrack** - Professional calibration management made simple.

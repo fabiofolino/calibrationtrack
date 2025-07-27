@@ -30,9 +30,18 @@ class CalibrationRecordController extends Controller
 
         $calibrationRecords = $query->latest()->get();
         
+        // Add permission check for each record
+        $calibrationRecords->each(function ($record) {
+            $record->can_delete = auth()->user()->can('delete', $record);
+        });
+        
         return Inertia::render('CalibrationRecords/Index', [
             'calibrationRecords' => $calibrationRecords,
             'gage_id' => $request->gage_id,
+            'user' => [
+                'is_admin' => auth()->user()->isAdmin(),
+                'id' => auth()->user()->id,
+            ],
         ]);
     }
 
@@ -60,10 +69,12 @@ class CalibrationRecordController extends Controller
 
         $request->validate([
             'gage_id' => 'required|exists:gages,id',
-            'measured_value' => 'required|numeric',
-            'calibrated_value' => 'required|numeric',
             'calibrated_at' => 'required|date',
             'cert_file' => 'nullable|file|mimes:pdf|max:10240', // 10MB max
+            'workflow_type' => 'required|in:detailed,simple',
+            // Legacy fields (only required for simple workflow)
+            'measured_value' => 'required_if:workflow_type,simple|nullable|numeric',
+            'calibrated_value' => 'required_if:workflow_type,simple|nullable|numeric',
         ]);
 
         // Verify gage belongs to user's company
@@ -71,11 +82,19 @@ class CalibrationRecordController extends Controller
 
         $data = [
             'gage_id' => $request->gage_id,
-            'measured_value' => $request->measured_value,
-            'calibrated_value' => $request->calibrated_value,
             'calibrated_at' => $request->calibrated_at,
             'user_id' => auth()->id(),
         ];
+
+        // For simple workflow, include the legacy measured/calibrated values
+        if ($request->workflow_type === 'simple') {
+            $data['measured_value'] = $request->measured_value;
+            $data['calibrated_value'] = $request->calibrated_value;
+        } else {
+            // For detailed workflow, use placeholder values that will be replaced by measurement groups
+            $data['measured_value'] = 0;
+            $data['calibrated_value'] = 0;
+        }
 
         // Handle file upload
         if ($request->hasFile('cert_file')) {
@@ -84,10 +103,18 @@ class CalibrationRecordController extends Controller
             $data['cert_file'] = $file->storeAs('calibration-certificates', $filename, 'public');
         }
 
-        CalibrationRecord::create($data);
+        $calibrationRecord = CalibrationRecord::create($data);
 
-        return redirect()->route('calibration-records.index', ['gage_id' => $request->gage_id])
-            ->with('success', 'Calibration record created successfully.');
+        // Redirect based on workflow type
+        if ($request->workflow_type === 'detailed') {
+            // For detailed workflow, redirect to create measurement groups
+            return redirect()->route('measurement-groups.create', ['calibration_record_id' => $calibrationRecord->id])
+                ->with('success', 'Calibration record created successfully. Now add measurement groups for detailed tracking.');
+        } else {
+            // For simple workflow, go back to the index
+            return redirect()->route('calibration-records.index', ['gage_id' => $request->gage_id])
+                ->with('success', 'Calibration record created successfully.');
+        }
     }
 
     /**

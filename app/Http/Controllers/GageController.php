@@ -14,13 +14,65 @@ class GageController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Gage::class);
 
-        $gages = auth()->user()->company->gages()->with(['department', 'calibrationRecords' => function ($query) {
-            $query->latest()->limit(1);
-        }])->get();
+        $company = auth()->user()->company;
+        
+        // Start with base query
+        $query = $company->gages()->with(['department', 'calibrationRecords' => function ($q) {
+            $q->latest()->limit(1);
+        }]);
+
+        // Apply search filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('gage_id', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('manufacturer', 'like', "%{$search}%")
+                  ->orWhere('serial_number', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('custodian', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by department
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        // Filter by calibration status
+        if ($request->filled('status')) {
+            $status = $request->status;
+            if ($status === 'overdue') {
+                $query->whereRaw('next_due_date < CURDATE()');
+            } elseif ($status === 'due_soon') {
+                $query->whereRaw('next_due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)');
+            } elseif ($status === 'on_schedule') {
+                $query->whereRaw('next_due_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)');
+            } elseif ($status === 'never_calibrated') {
+                $query->whereDoesntHave('calibrationRecords');
+            }
+        }
+
+        // Filter by location
+        if ($request->filled('location')) {
+            $query->where('location', 'like', "%{$request->location}%");
+        }
+
+        // Sort options
+        $sortBy = $request->get('sort_by', 'gage_id');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        $validSortFields = ['gage_id', 'description', 'location', 'custodian', 'next_due_date'];
+        if (in_array($sortBy, $validSortFields)) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $gages = $query->get();
 
         // Add status information to each gage
         $gages->each(function ($gage) {
@@ -28,9 +80,27 @@ class GageController extends Controller
             $gage->status_color = $gage->getCalibrationStatusColor();
             $gage->days_until_due = $gage->getDaysUntilDue();
         });
+
+        // Get departments for filter dropdown
+        $departments = $company->departments()->orderBy('name')->get();
+        
+        // Get unique locations for filter dropdown
+        $locations = $company->gages()->distinct()->pluck('location')->filter()->sort()->values();
         
         return Inertia::render('Gages/Index', [
             'gages' => $gages,
+            'departments' => $departments,
+            'locations' => $locations,
+            'filters' => $request->only(['search', 'department_id', 'status', 'location', 'sort_by', 'sort_order']),
+            'subscriptionInfo' => [
+                'hasActiveSubscription' => $company->hasActiveSubscription(),
+                'onTrial' => $company->onTrial(),
+                'canAddGages' => $company->canAddGages(),
+                'gageCount' => $company->getGageCount(),
+                'gageLimit' => $company->getGageLimit(),
+                'hasReachedLimit' => $company->hasReachedGageLimit(),
+            ],
+            'hasDepartments' => $company->departments()->exists(),
         ]);
     }
 
@@ -41,7 +111,21 @@ class GageController extends Controller
     {
         $this->authorize('create', Gage::class);
 
-        $departments = auth()->user()->company->departments()->get();
+        $company = auth()->user()->company;
+        
+        // Check if company has any departments first
+        if (!$company->departments()->exists()) {
+            return redirect()->route('departments.create')
+                ->with('error', 'You must create at least one department before adding gages.');
+        }
+        
+        // Check if company can add more gages
+        if (!$company->canAddGages()) {
+            return redirect()->route('subscription.subscribe')
+                ->with('error', 'You have reached the limit of 10 gages. Please subscribe to add more gages.');
+        }
+
+        $departments = $company->departments()->get();
 
         return Inertia::render('Gages/Create', [
             'departments' => $departments,
@@ -54,6 +138,20 @@ class GageController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Gage::class);
+
+        $company = auth()->user()->company;
+        
+        // Check if company has any departments first
+        if (!$company->departments()->exists()) {
+            return redirect()->route('departments.create')
+                ->with('error', 'You must create at least one department before adding gages.');
+        }
+        
+        // Check if company can add more gages
+        if (!$company->canAddGages()) {
+            return redirect()->route('subscription.subscribe')
+                ->with('error', 'You have reached the limit of 10 gages. Please subscribe to add more gages.');
+        }
 
         $request->validate([
             'department_id' => 'required|exists:departments,id',
@@ -68,7 +166,7 @@ class GageController extends Controller
         ]);
 
         // Verify department belongs to user's company
-        $department = auth()->user()->company->departments()->findOrFail($request->department_id);
+        $department = $company->departments()->findOrFail($request->department_id);
 
         Gage::create($request->only([
             'department_id', 'gage_id', 'description', 'model', 'manufacturer', 
