@@ -1,13 +1,58 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     calibrationRecords: Array,
     gage_id: String,
     user: Object,
+    departments: Array,
+    users: Array,
+    filters: Object,
 });
+
+// Search and filter state
+const search = ref(props.filters?.search || '');
+const selectedDepartment = ref(props.filters?.department_id || '');
+const selectedUser = ref(props.filters?.user_id || '');
+const dateFrom = ref(props.filters?.date_from || '');
+const dateTo = ref(props.filters?.date_to || '');
+
+// Apply filters function
+const applyFilters = () => {
+    router.get(route('calibration-records.index', props.gage_id ? { gage_id: props.gage_id } : {}), {
+        search: search.value || undefined,
+        department_id: selectedDepartment.value || undefined,
+        user_id: selectedUser.value || undefined,
+        date_from: dateFrom.value || undefined,
+        date_to: dateTo.value || undefined,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+// Debounced search
+let searchTimeout;
+watch(search, () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(applyFilters, 300);
+});
+
+// Immediate filter application for dropdowns and dates
+watch([selectedDepartment, selectedUser, dateFrom, dateTo], applyFilters);
+
+const clearFilters = () => {
+    search.value = '';
+    selectedDepartment.value = '';
+    selectedUser.value = '';
+    dateFrom.value = '';
+    dateTo.value = '';
+    applyFilters();
+};
 
 const deleteRecord = (record) => {
     // Additional client-side check with helpful messages
@@ -98,6 +143,60 @@ const getDeletionTooltip = (record) => {
                                 <Link :href="route('calibration-records.create', gage_id ? { gage_id } : {})">
                                     <PrimaryButton>Add Calibration Record</PrimaryButton>
                                 </Link>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filter Section -->
+                        <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+                                    <TextInput 
+                                        v-model="search"
+                                        placeholder="Search by technician, gage..."
+                                        class="w-full"
+                                    />
+                                </div>
+                                <div v-if="departments && departments.length > 0">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                                    <select 
+                                        v-model="selectedDepartment" 
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800"
+                                    >
+                                        <option value="">All Departments</option>
+                                        <option 
+                                            v-for="department in departments" 
+                                            :key="department.id" 
+                                            :value="department.id"
+                                        >
+                                            {{ department.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
+                                    <input 
+                                        v-model="dateFrom"
+                                        type="date"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
+                                    <input 
+                                        v-model="dateTo"
+                                        type="date"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800"
+                                    />
+                                </div>
+                                <div class="flex items-end">
+                                    <button 
+                                        @click="clearFilters"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -192,33 +291,51 @@ const getDeletionTooltip = (record) => {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div class="flex justify-end space-x-2">
+                                            <div class="flex justify-end space-x-3">
+                                                <!-- View Icon -->
                                                 <Link 
                                                     :href="route('calibration-records.show', record.id)"
-                                                    class="text-blue-600 hover:text-blue-800"
+                                                    class="text-blue-600 hover:text-blue-800 transition-colors"
+                                                    title="View calibration record details"
                                                 >
-                                                    View
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
                                                 </Link>
+
+                                                <!-- Edit Icon -->
                                                 <Link 
                                                     :href="route('calibration-records.edit', record.id)"
-                                                    class="text-blue-600 hover:text-blue-800"
+                                                    class="text-green-600 hover:text-green-800 transition-colors"
+                                                    title="Edit calibration record"
                                                 >
-                                                    Edit
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
                                                 </Link>
+
+                                                <!-- Delete Icon -->
                                                 <button 
                                                     v-if="record.can_delete"
                                                     @click="deleteRecord(record)"
                                                     class="text-red-600 hover:text-red-800 transition-colors"
                                                     :title="getDeletionTooltip(record)"
                                                 >
-                                                    Delete
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
                                                 </button>
+
+                                                <!-- Disabled Delete Icon -->
                                                 <span 
                                                     v-else
                                                     class="text-gray-400 cursor-not-allowed"
                                                     :title="getDeletionTooltip(record)"
                                                 >
-                                                    Delete
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
                                                 </span>
                                             </div>
                                         </td>

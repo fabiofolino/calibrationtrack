@@ -204,6 +204,9 @@ class MeasurementGroupController extends Controller
             'measurements.*.standards_used' => 'nullable|string',
         ]);
 
+        $hasOutOfToleranceConditions = false;
+        $failedMeasurements = [];
+
         foreach ($request->measurements as $measurementData) {
             $measurement = Measurement::find($measurementData['id']);
             
@@ -219,8 +222,39 @@ class MeasurementGroupController extends Controller
             $measurement->calculateAsFoundStatus();
             $measurement->calculateAsLeftStatus();
             $measurement->save();
+
+            // Check for out-of-tolerance conditions
+            if ($measurement->as_found_pass === false || $measurement->as_left_pass === false) {
+                $hasOutOfToleranceConditions = true;
+                $failedMeasurements[] = [
+                    'description' => $measurement->description ?: "Point {$measurement->sequence}",
+                    'nominal' => $measurement->nominal,
+                    'as_found_value' => $measurement->as_found_value,
+                    'as_left_value' => $measurement->as_left_value,
+                    'as_found_pass' => $measurement->as_found_pass,
+                    'as_left_pass' => $measurement->as_left_pass,
+                ];
+            }
         }
 
-        return back()->with('success', 'Measurements updated successfully.');
+        // If out-of-tolerance conditions detected, redirect to risk analysis workflow
+        if ($hasOutOfToleranceConditions) {
+            // Check if tolerance record already exists for this calibration record
+            $existingToleranceRecord = \App\Models\GageToleranceRecord::where('calibration_record_id', $measurementGroup->calibration_record_id)
+                ->where('status', '!=', 'resolved')
+                ->first();
+
+            if (!$existingToleranceRecord) {
+                return redirect()->route('gage-tolerance-records.create', [
+                    'calibration_record_id' => $measurementGroup->calibration_record_id
+                ])->with('warning', 'Out-of-tolerance condition detected! Please complete the risk analysis and document corrective actions.')
+                ->with('failed_measurements', $failedMeasurements);
+            } else {
+                return back()->with('warning', 'Out-of-tolerance condition detected! An existing tolerance record is already tracking this issue.')
+                ->with('existing_tolerance_record', $existingToleranceRecord->id);
+            }
+        }
+
+        return back()->with('success', 'Measurements updated successfully. All measurements are within tolerance.');
     }
 }

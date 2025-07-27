@@ -105,6 +105,34 @@ class CalibrationRecordController extends Controller
 
         $calibrationRecord = CalibrationRecord::create($data);
 
+        // Check for out-of-tolerance conditions in simple workflow
+        if ($request->workflow_type === 'simple') {
+            $shouldTriggerRiskAnalysis = $this->shouldTriggerRiskAnalysis(
+                $request->measured_value, 
+                $request->calibrated_value, 
+                $gage
+            );
+
+            if ($shouldTriggerRiskAnalysis) {
+                // Check if tolerance record already exists for this calibration record
+                $existingToleranceRecord = \App\Models\GageToleranceRecord::where('calibration_record_id', $calibrationRecord->id)
+                    ->where('status', '!=', 'resolved')
+                    ->first();
+
+                if (!$existingToleranceRecord) {
+                    return redirect()->route('gage-tolerance-records.create', [
+                        'calibration_record_id' => $calibrationRecord->id
+                    ])->with('warning', 'Significant measurement deviation detected! Please complete the risk analysis and document corrective actions.')
+                    ->with('measurement_deviation', [
+                        'measured_value' => $request->measured_value,
+                        'calibrated_value' => $request->calibrated_value,
+                        'difference' => abs($request->calibrated_value - $request->measured_value),
+                        'gage_name' => $gage->name
+                    ]);
+                }
+            }
+        }
+
         // Redirect based on workflow type
         if ($request->workflow_type === 'detailed') {
             // For detailed workflow, redirect to create measurement groups
@@ -191,6 +219,36 @@ class CalibrationRecordController extends Controller
 
         $calibrationRecord->update($data);
 
+        // Check for out-of-tolerance conditions in simple workflow
+        $shouldTriggerRiskAnalysis = $this->shouldTriggerRiskAnalysis(
+            $request->measured_value, 
+            $request->calibrated_value, 
+            $gage
+        );
+
+        if ($shouldTriggerRiskAnalysis) {
+            // Check if tolerance record already exists for this calibration record
+            $existingToleranceRecord = \App\Models\GageToleranceRecord::where('calibration_record_id', $calibrationRecord->id)
+                ->where('status', '!=', 'resolved')
+                ->first();
+
+            if (!$existingToleranceRecord) {
+                return redirect()->route('gage-tolerance-records.create', [
+                    'calibration_record_id' => $calibrationRecord->id
+                ])->with('warning', 'Significant measurement deviation detected! Please complete the risk analysis and document corrective actions.')
+                ->with('measurement_deviation', [
+                    'measured_value' => $request->measured_value,
+                    'calibrated_value' => $request->calibrated_value,
+                    'difference' => abs($request->calibrated_value - $request->measured_value),
+                    'gage_name' => $gage->name
+                ]);
+            } else {
+                return redirect()->route('calibration-records.index', ['gage_id' => $calibrationRecord->gage_id])
+                    ->with('warning', 'Significant measurement deviation detected! An existing tolerance record is already tracking this issue.')
+                    ->with('existing_tolerance_record', $existingToleranceRecord->id);
+            }
+        }
+
         return redirect()->route('calibration-records.index', ['gage_id' => $calibrationRecord->gage_id])
             ->with('success', 'Calibration record updated successfully.');
     }
@@ -226,6 +284,31 @@ class CalibrationRecordController extends Controller
             abort(404, 'Certificate not found.');
         }
 
-        return \Storage::disk('public')->download($calibrationRecord->cert_file);
+        return \Storage::disk('public')->response($calibrationRecord->cert_file);
+    }
+
+    /**
+     * Determine if a risk analysis should be triggered based on measurement deviation
+     * For simple calibrations, we use a configurable threshold approach
+     */
+    private function shouldTriggerRiskAnalysis($measuredValue, $calibratedValue, $gage)
+    {
+        // Calculate the absolute difference between measured and calibrated values
+        $difference = abs($calibratedValue - $measuredValue);
+        
+        // Calculate percentage difference if measured value is not zero
+        $percentageDifference = $measuredValue != 0 ? ($difference / abs($measuredValue)) * 100 : 0;
+        
+        // Configurable thresholds - these could be moved to config or gage-specific settings
+        $absoluteThreshold = 0.01; // Trigger if difference > 0.01 units
+        $percentageThreshold = 1.0; // Trigger if difference > 1% of measured value
+        
+        // For very small values (near zero), use absolute threshold
+        if (abs($measuredValue) < 1.0) {
+            return $difference > $absoluteThreshold;
+        }
+        
+        // For larger values, use percentage threshold
+        return $percentageDifference > $percentageThreshold;
     }
 }
